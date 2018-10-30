@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        .fbox {
+            border: 2px solid #f00;
+            position: absolute;
+            width: calc(100% - 10px);
+            height: calc(100% - 10px);
+            font-size: 2rem;
+            color: white;
+        }
+
+        .fbox .box {
+            position: absolute;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 随机生成（515 9 8 8 8 ）盒子 -->
+    <!-- 1 .随机生成宽高  位置
+            everyBox  width height(随机数)
+                    left top  （设置盒子定位）
+        2.每个盒子的偏移量 随机
+        box1_offsetX  box1_offsetY
+    -->
+    <div class="fbox"></div>
+    <script>
+        // 1.生成随机数量的盒子
+        var boxNum = getRandom(3, 3);
+        var time_ = 10;
+        // 获取父元素
+        var fbox = document.getElementsByClassName('fbox')[0];
+
+        // 存储偏移量的数组
+        var offsetArr = [];
+        var Index = 0;
+
+
+
+        for (var i = 0; i < boxNum; i++) {
+            // 偏移量
+            Index++;
+            var offx = getRandom(1, 5);
+            var offy = getRandom(1, 5);
+            // 宽度 高度
+            var width_ = getRandom(offx + 5, 150);
+            var height_ = width_;
+            // 位置
+            var left_ = getRandom(1, fbox.offsetWidth - width_);
+            var top_ = getRandom(1, fbox.offsetHeight - height_);
+            // 将当前 盒子的 偏移量 添加至数组中
+            offsetArr.push([offx, offy]);
+
+            fbox.innerHTML += '<div class="box" style="width:' + width_ + 'px;height:' + height_ + 'px;left:' + left_ +
+                'px;top:' + top_ + 'px;background-color:' + getColor() + '">' + Index + '</div>';
+        }
+
+        // 2.获取生成的标签 对象
+        var allBox = document.getElementsByClassName('box');
+        var box1L, box1R, box1T, box1B, box2L, box2R, box2T, box2B, box3L, box3R, box3T, box3B;
+        // 3.执行动画
+        // 每个 n秒 执行一次（让盒子进行移动）
+        setInterval(boxMove, time_);
+        // 盒子移动的函数
+        function boxMove() {
+            for (var i = 0; i < allBox.length; i++) {
+                // 获取当前盒子的位置 x轴
+                var offsetL = allBox[i].offsetLeft;
+
+                // 获取当前盒子的位置 y轴
+                var offsetT = allBox[i].offsetTop;
+
+                // 设置盒子新的位置
+                if (offsetT >= fbox.offsetHeight - allBox[i].offsetHeight || offsetT <= 0) {
+                    offsetArr[i][1] *= -1;
+                }
+                if (offsetL >= fbox.offsetWidth - allBox[i].offsetWidth || offsetL <= 0) {
+                    offsetArr[i][0] *= -1;
+                }
+                if (i + 1 < allBox.length) {
+                    box1L = allBox[i].offsetLeft + 'px';
+                    box1R = allBox[i].offsetLeft + allBox[i].offsetWidth + 'px';
+                    box1T = allBox[i].offsetTop + 'px';
+                    box1B = allBox[i].offsetTop + allBox[i].offsetHeight + 'px';
+
+                    box2L = allBox[i + 1].offsetLeft + 'px';
+                    box2R = allBox[i + 1].offsetLeft + allBox[i + 1].offsetWidth + 'px';
+                    box2T = allBox[i + 1].offsetTop + 'px';
+                    box2B = allBox[i + 1].offsetTop + allBox[i + 1].offsetHeight + 'px';
+
+                    // box3L = allBox[i - 1].offsetLeft + 'px';
+                    // box3R = allBox[i - 1].offsetLeft + allBox[i - 1].offsetWidth + 'px';
+                    // box3T = allBox[i - 1].offsetTop + 'px';
+                    // box3B = allBox[i - 1].offsetTop + allBox[i - 1].offsetHeight + 'px';
+                    if (box1R >= box2L && box1L <= box2R && box1T <= box2B && box1B >= box2T) {
+                        offsetArr[i][1] *= -1;
+                        offsetArr[i][0] *= -1;
+                        offsetArr[i + 1][1] *= -1;
+                        offsetArr[i + 1][0] *= -1;
+                    }
+                }
+                if (i - 1 > 0) {
+                    box1L = allBox[i].offsetLeft + 'px';
+                    box1R = allBox[i].offsetLeft + allBox[i].offsetWidth + 'px';
+                    box1T = allBox[i].offsetTop + 'px';
+                    box1B = allBox[i].offsetTop + allBox[i].offsetHeight + 'px';
+
+                    // box2L = allBox[i + 1].offsetLeft + 'px';
+                    // box2R = allBox[i + 1].offsetLeft + allBox[i + 1].offsetWidth + 'px';
+                    // box2T = allBox[i + 1].offsetTop + 'px';
+                    // box2B = allBox[i + 1].offsetTop + allBox[i + 1].offsetHeight + 'px';
+
+                    box3L = allBox[i - 1].offsetLeft + 'px';
+                    box3R = allBox[i - 1].offsetLeft + allBox[i - 1].offsetWidth + 'px';
+                    box3T = allBox[i - 1].offsetTop + 'px';
+                    box3B = allBox[i - 1].offsetTop + allBox[i - 1].offsetHeight + 'px';
+                    if (box3R >= box1L && box3L <= box1R && box3T <= box1B && box3B >= box1T) {
+                        offsetArr[i][1] *= -1;
+                        offsetArr[i][0] *= -1;
+                        offsetArr[i - 1][1] *= -1;
+                        offsetArr[i - 1][0] *= -1;
+                    }
+                }
+                if (i - 1 >= 0 && i + 1 < allBox.length) {
+                    box2L = allBox[i + 1].offsetLeft + 'px';
+                    box2R = allBox[i + 1].offsetLeft + allBox[i + 1].offsetWidth + 'px';
+                    box2T = allBox[i + 1].offsetTop + 'px';
+                    box2B = allBox[i + 1].offsetTop + allBox[i + 1].offsetHeight + 'px';
+
+                    box3L = allBox[i - 1].offsetLeft + 'px';
+                    box3R = allBox[i - 1].offsetLeft + allBox[i - 1].offsetWidth + 'px';
+                    box3T = allBox[i - 1].offsetTop + 'px';
+                    box3B = allBox[i - 1].offsetTop + allBox[i - 1].offsetHeight + 'px';
+
+                    if(box3R >= box2L && box3L <= box2R && box3T <= box2B && box3B >= box2T){
+                    offsetArr[i - 1][1] *= -1;
+                    offsetArr[i - 1][0] *= -1;
+                    offsetArr[i + 1][1] *= -1;
+                    offsetArr[i + 1][0] *= -1;
+                    }
+
+                    
+                }
+
+                offsetL += offsetArr[i][0];
+                offsetT += offsetArr[i][1]
+                allBox[i].style.left = offsetL + 'px';
+                allBox[i].style.top = offsetT + 'px';
+            }
+        }
+
+        // 随机函数
+        function getRandom(min, max) {
+            return Math.round(Math.random() * (max - min) + min);
+        }
+
+        // 随机产生颜色
+        function getColor() {
+            return 'rgb(' + getRandom(0, 255) + ',' + getRandom(0, 255) + ',' + getRandom(0, 255) + ')'
+        }
+    </script>
+</body>
+
+</html>
