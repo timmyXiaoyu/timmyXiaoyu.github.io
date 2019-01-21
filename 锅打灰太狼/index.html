@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>锅打灰太狼</title>
+    <style>
+    .fbox{
+        position: relative;
+        width: 320px;
+        height: 480px;
+        display: inline-block;
+    }
+    .score{
+        position: absolute;
+        font-size: 2rem;
+        color: white;
+        top: 0;left: 60px;
+    }
+    .time{
+        position: absolute;
+        top: 65px;
+        left: 63px;
+        display: inline-block;
+        overflow: hidden;
+    }
+    .mask{
+        width: 320px;
+        height: 480px;
+        position: absolute;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0,0,0,0.5);
+    }
+    .btn{
+        display: inline-block;
+        color: white;
+        font-size: 2rem;
+        background: red;
+        cursor:pointer;
+        border-radius: 10px;
+    }
+    .x{
+        background: url('img/x.png');
+    }
+    .h{
+        background: url('img/h.png');
+    }
+    .a{
+        position: absolute;
+        width: 108px;
+        height: 101px;
+        background-position: 0 0;
+    }
+    .bg{
+        vertical-align: top;
+    }
+    </style>
+</head>
+<body>
+    <!-- 父容器 -->
+    <div class="fbox">
+        <!-- 背景图 -->
+        <img src="img/game_bg.jpg" alt="" class="bg">
+        <!-- 得分 -->
+        <div class="score">0</div>
+        <!-- 倒计时 -->
+        <div class="time">
+            <img src="img/progress.png" alt="">
+        </div>
+        <!-- 遮罩层 -->
+        <div class="mask">
+            <p class="btn">开始游戏</p>
+        </div>
+        <!--坑  -->
+        <div class="anim"></div>
+    </div>
+    <script>
+    var score=document.getElementsByClassName('score')[0];//分数
+    var btn=document.getElementsByClassName('btn')[0];//开始按钮
+    var time=document.getElementsByClassName('time')[0];//进度条
+    var mask=document.getElementsByClassName('mask')[0];//遮罩层
+    var anim=document.getElementsByClassName('anim')[0];//动物容器
+
+    var gameTime=500;//游戏进度条刷新间隔
+    var speed=2;//游戏进度条偏移量
+    // 狼的所有位置
+    var pos = [{
+        x: 188,
+        y: 139
+    }, {
+        x: 97, //
+        y: 115 //
+    }, {
+        x: 17,
+        y: 157
+    }, {
+        x: 17,
+        y: 220
+    }, {
+        x: 100,
+        y: 190
+    }, {
+        x: 198,
+        y: 212
+    }, {
+        x: 29,
+        y: 292
+    }, {
+        x: 117,
+        y: 270
+    }, {
+        x: 205,
+        y: 294
+    }];
+    // 创建狼
+    function createWolf(){
+        var wolf=document.createElement('div');
+        var name=getRandom(0,100) >=70? 'x':'h';
+        wolf.className='a '+name;
+        var pos_=getRandom(0,pos.length-1);
+        wolf.style.top=pos[pos_].y+'px';
+        wolf.style.left=pos[pos_].x+'px';
+        wolf.pos=pos_;
+        wolf.flag=false;//角色未被点击
+        wolf.type=name;//角色类型
+        wolf.index_=0;
+        // 上升
+        wolf.upTimer=setInterval(function(){
+            if(wolf.index_<=5){
+                // debugger
+                wolf.style.backgroundPosition=-(wolf.index_*108)+'px';
+                wolf.index_++;
+            }else{
+                clearInterval(wolf.upTimer);
+                // 下降
+                wolf.downTimer=setInterval(function(){
+                    if(wolf.index_<=0){
+                        clearInterval(wolf.downTimer);
+                        wolf.parentNode.removeChild(wolf);
+
+                    }else{
+
+                        wolf.index_--;
+                        wolf.style.backgroundPositionX=wolf.index_*-108+'px';
+                    }
+                },200)
+            }
+        },200)
+        //打击事件
+        wolf.onclick=function(){
+            if(!this.flag){
+                this.flag=true;
+                Score(this.type);
+                this.index_=5;
+                clearInterval(this.upTimer);
+                clearInterval(this.downTimer);
+                var that=this;
+                // 打击动画
+                wolf.djTimer=setInterval(function(){
+                    if(that.index_<=9){
+                        that.index_++;
+                        wolf.style.backgroundPositionX=wolf.index_*-108+'px';
+                    }else{
+                        clearInterval(wolf.djTimer);
+                        anim.removeChild(wolf);
+                    }
+                },200)
+            }
+        }
+        var a=document.getElementsByClassName('a');
+        var flag=false;
+        for(var i=0;i<a.length;i++){
+            if(pos_==a[i].pos){
+                flag=true;
+                break;
+            }
+        }
+        if(flag==true){
+            return createWolf();
+        }else{
+            return wolf;
+        }
+    }
+    // 产生狼的时间
+    function state(){
+        yy=setInterval(function(){
+            var wolf=createWolf();
+            anim.appendChild(wolf);
+        },1500)
+    }
+    // 随机数
+    function getRandom(min,max){
+        return Math.round(Math.random()*(max-min)+min);
+    }
+    // 计算分数
+    var this_score=0;
+    var score_val=0;
+    function Score(obj_type){
+        if(obj_type=='x'){
+            this_score-=10;
+        }else{
+            this_score+=10;
+        }
+        score_val=this_score;
+        score.innerHTML=score_val;
+    }
+    // 点击开始按钮
+    btn.onclick=function(){
+        mask.style.display='none';
+        Timer=setInterval(function(){
+            var timeWidth=time.offsetWidth;
+            if(timeWidth<=0){
+                clearInterval(Timer);
+                clearInterval(yy);
+            }else{
+                timeWidth-=speed;
+                time.style.width=timeWidth+'px';
+            }
+        },gameTime)
+        state();
+    }
+    </script>
+</body>
+</html>
